@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card } from "@/components/ui/card"
 import { Menu, Edit, Copy, ThumbsUp, ThumbsDown, Volume2, Share, RotateCcw, Download } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-import html2canvas from "html2canvas"
+import * as domtoimage from "dom-to-image"
 
 const models = [
   "ChatGPT 3.5",
@@ -75,22 +75,59 @@ export default function ChatGPTMemeGenerator() {
     if (!chatRef.current) return
 
     try {
-      const canvas = await html2canvas(chatRef.current, {
-        backgroundColor: "#1f1f1f",
-        scale: 2,
-        useCORS: true,
+      await document.fonts.ready
+
+      // Create a style element with embedded Inter font
+      const fontStyle = document.createElement("style")
+      fontStyle.textContent = `
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        * { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important; }
+      `
+
+      const dataUrl = await domtoimage.toPng(chatRef.current, {
+        quality: 1.0,
+        bgcolor: "#1f1f1f",
+        width: chatRef.current.offsetWidth,
+        height: chatRef.current.offsetHeight,
+        pixelRatio: 2,
+        style: {
+          fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+        },
+        filter: (node) => {
+          // Ensure all text nodes use Inter font
+          if (node.nodeType === Node.ELEMENT_NODE) {
+            const element = node as HTMLElement
+            element.style.fontFamily = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+          }
+          return true
+        },
+        onclone: (clonedDoc) => {
+          // Add font stylesheet to cloned document
+          clonedDoc.head.appendChild(fontStyle.cloneNode(true))
+
+          // Apply font to all elements in cloned document
+          const allElements = clonedDoc.querySelectorAll("*")
+          allElements.forEach((el) => {
+            if (el instanceof HTMLElement) {
+              el.style.fontFamily = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+            }
+          })
+        },
       })
 
       const link = document.createElement("a")
       link.download = "chatgpt-meme.png"
-      link.href = canvas.toDataURL()
+      link.href = dataUrl
+      document.body.appendChild(link)
       link.click()
+      document.body.removeChild(link)
 
       toast({
         title: "Downloaded!",
         description: "Your ChatGPT meme has been saved as an image.",
       })
     } catch (error) {
+      console.error("[v0] Download error:", error)
       toast({
         title: "Error",
         description: "Failed to download image. Please try again.",
@@ -103,25 +140,61 @@ export default function ChatGPTMemeGenerator() {
     if (!chatRef.current) return
 
     try {
-      const canvas = await html2canvas(chatRef.current, {
-        backgroundColor: "#1f1f1f",
-        scale: 2,
-        useCORS: true,
+      await document.fonts.ready
+
+      // Create a style element with embedded Inter font
+      const fontStyle = document.createElement("style")
+      fontStyle.textContent = `
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        * { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important; }
+      `
+
+      const blob = await domtoimage.toBlob(chatRef.current, {
+        quality: 1.0,
+        bgcolor: "#1f1f1f",
+        width: chatRef.current.offsetWidth,
+        height: chatRef.current.offsetHeight,
+        pixelRatio: 2,
+        style: {
+          fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+        },
+        filter: (node) => {
+          // Ensure all text nodes use Inter font
+          if (node.nodeType === Node.ELEMENT_NODE) {
+            const element = node as HTMLElement
+            element.style.fontFamily = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+          }
+          return true
+        },
+        onclone: (clonedDoc) => {
+          // Add font stylesheet to cloned document
+          clonedDoc.head.appendChild(fontStyle.cloneNode(true))
+
+          // Apply font to all elements in cloned document
+          const allElements = clonedDoc.querySelectorAll("*")
+          allElements.forEach((el) => {
+            if (el instanceof HTMLElement) {
+              el.style.fontFamily = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+            }
+          })
+        },
       })
 
-      canvas.toBlob(async (blob) => {
-        if (blob) {
-          await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })])
-          toast({
-            title: "Copied!",
-            description: "ChatGPT meme copied to clipboard.",
-          })
-        }
+      if (!navigator.clipboard || !navigator.clipboard.write) {
+        throw new Error("Clipboard API not supported")
+      }
+
+      await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })])
+
+      toast({
+        title: "Copied!",
+        description: "ChatGPT meme copied to clipboard.",
       })
     } catch (error) {
+      console.error("[v0] Copy error:", error)
       toast({
         title: "Error",
-        description: "Failed to copy to clipboard. Please try again.",
+        description: "Failed to copy to clipboard. Please try downloading instead.",
         variant: "destructive",
       })
     }
@@ -138,9 +211,11 @@ export default function ChatGPTMemeGenerator() {
         {/* Controls */}
         <Card className="p-6 space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-2">Meme Template</label>
+            <label htmlFor="template-select" className="block text-sm font-medium mb-2">
+              Meme Template
+            </label>
             <Select value={selectedTemplate} onValueChange={handleTemplateChange}>
-              <SelectTrigger>
+              <SelectTrigger id="template-select">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -155,9 +230,11 @@ export default function ChatGPTMemeGenerator() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="block text-sm font-medium mb-2">AI Model</label>
+              <label htmlFor="model-select" className="block text-sm font-medium mb-2">
+                AI Model
+              </label>
               <Select value={selectedModel} onValueChange={setSelectedModel}>
-                <SelectTrigger>
+                <SelectTrigger id="model-select">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -170,6 +247,8 @@ export default function ChatGPTMemeGenerator() {
               </Select>
               {selectedModel === "Custom" && (
                 <Input
+                  id="custom-model-input"
+                  name="customModel"
                   value={customModelName}
                   onChange={(e) => setCustomModelName(e.target.value)}
                   placeholder="Enter custom model name..."
@@ -178,8 +257,12 @@ export default function ChatGPTMemeGenerator() {
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Thinking Time</label>
+              <label htmlFor="thinking-time-input" className="block text-sm font-medium mb-2">
+                Thinking Time
+              </label>
               <Input
+                id="thinking-time-input"
+                name="thinkingTime"
                 value={thinkingTime}
                 onChange={(e) => setThinkingTime(e.target.value)}
                 placeholder="e.g., 69m 42s"
@@ -188,8 +271,12 @@ export default function ChatGPTMemeGenerator() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">User Message</label>
+            <label htmlFor="user-message-textarea" className="block text-sm font-medium mb-2">
+              User Message
+            </label>
             <Textarea
+              id="user-message-textarea"
+              name="userMessage"
               value={userMessage}
               onChange={(e) => {
                 setUserMessage(e.target.value)
@@ -203,8 +290,12 @@ export default function ChatGPTMemeGenerator() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">AI Response</label>
+            <label htmlFor="ai-response-textarea" className="block text-sm font-medium mb-2">
+              AI Response
+            </label>
             <Textarea
+              id="ai-response-textarea"
+              name="aiResponse"
               value={aiResponse}
               onChange={(e) => {
                 setAiResponse(e.target.value)
@@ -220,7 +311,10 @@ export default function ChatGPTMemeGenerator() {
 
         {/* Preview */}
         <div className="flex justify-center">
-          <div ref={chatRef} className="w-full max-w-2xl bg-[#1f1f1f] text-white rounded-lg overflow-hidden shadow-2xl">
+          <div
+            ref={chatRef}
+            className="w-full max-w-2xl bg-[#1f1f1f] text-white rounded-lg overflow-hidden shadow-2xl font-sans"
+          >
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-gray-700">
               <Menu className="w-6 h-6 text-gray-400" />
