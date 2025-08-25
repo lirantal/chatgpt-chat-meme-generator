@@ -24,7 +24,7 @@ const models = [
 export default function ChatGPTMemeGenerator() {
   const [selectedModel, setSelectedModel] = useState("ChatGPT 5 Pro")
   const [customModelName, setCustomModelName] = useState("")
-  const [userMessage, setUserMessage] = useState("How do I install CUDA 12.1 on Ubuntu 24.04?")
+  const [userMessage, setUserMessage] = useState("How do I install Fortnite on Mac?")
   const [thinkingTime, setThinkingTime] = useState("69m 42s")
   const [aiResponse, setAiResponse] = useState("You can't.")
   const chatRef = useRef<HTMLDivElement>(null)
