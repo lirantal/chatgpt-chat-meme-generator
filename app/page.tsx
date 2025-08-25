@@ -21,9 +21,37 @@ const models = [
   "Custom",
 ]
 
+const memeTemplates = [
+  {
+    id: "custom",
+    name: "Custom",
+    userMessage: "",
+    aiResponse: "",
+  },
+  {
+    id: "secure-code",
+    name: "Secure Code",
+    userMessage: "Can LLM generate secure code?",
+    aiResponse: "No",
+  },
+  {
+    id: "sun-rise",
+    name: "Sun Rise",
+    userMessage: "Will the sun rise tomorrow?",
+    aiResponse: "Yes",
+  },
+  {
+    id: "rx-5090",
+    name: "RX 5090 Pi",
+    userMessage: "How do I install an RX 5090 on a Raspberry Pi?",
+    aiResponse: "You can't",
+  },
+]
+
 export default function ChatGPTMemeGenerator() {
   const [selectedModel, setSelectedModel] = useState("ChatGPT 5 Pro")
   const [customModelName, setCustomModelName] = useState("")
+  const [selectedTemplate, setSelectedTemplate] = useState("custom")
   const [userMessage, setUserMessage] = useState("How do I install Fortnite on Mac?")
   const [thinkingTime, setThinkingTime] = useState("69m 42s")
   const [aiResponse, setAiResponse] = useState("You can't.")
@@ -32,6 +60,15 @@ export default function ChatGPTMemeGenerator() {
 
   const getDisplayModelName = () => {
     return selectedModel === "Custom" ? customModelName || "Custom Model" : selectedModel
+  }
+
+  const handleTemplateChange = (templateId: string) => {
+    setSelectedTemplate(templateId)
+    const template = memeTemplates.find((t) => t.id === templateId)
+    if (template && templateId !== "custom") {
+      setUserMessage(template.userMessage)
+      setAiResponse(template.aiResponse)
+    }
   }
 
   const downloadAsImage = async () => {
@@ -100,6 +137,22 @@ export default function ChatGPTMemeGenerator() {
 
         {/* Controls */}
         <Card className="p-6 space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-2">Meme Template</label>
+            <Select value={selectedTemplate} onValueChange={handleTemplateChange}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {memeTemplates.map((template) => (
+                  <SelectItem key={template.id} value={template.id}>
+                    {template.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="block text-sm font-medium mb-2">AI Model</label>
@@ -138,7 +191,12 @@ export default function ChatGPTMemeGenerator() {
             <label className="block text-sm font-medium mb-2">User Message</label>
             <Textarea
               value={userMessage}
-              onChange={(e) => setUserMessage(e.target.value)}
+              onChange={(e) => {
+                setUserMessage(e.target.value)
+                if (selectedTemplate !== "custom") {
+                  setSelectedTemplate("custom")
+                }
+              }}
               placeholder="Enter the user's question..."
               rows={3}
             />
@@ -148,7 +206,12 @@ export default function ChatGPTMemeGenerator() {
             <label className="block text-sm font-medium mb-2">AI Response</label>
             <Textarea
               value={aiResponse}
-              onChange={(e) => setAiResponse(e.target.value)}
+              onChange={(e) => {
+                setAiResponse(e.target.value)
+                if (selectedTemplate !== "custom") {
+                  setSelectedTemplate("custom")
+                }
+              }}
               placeholder="Enter the AI's response..."
               rows={3}
             />
