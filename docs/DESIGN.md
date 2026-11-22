@@ -24,24 +24,18 @@ A web application that recreates the ChatGPT interface for generating meme-style
 
 ### Key Libraries
 - **dom-to-image** for image capture (replaced html2canvas due to oklch color support)
-- **Inter font** from Google Fonts for clean, modern typography
+- **Inter font** bundled through Fontsource for clean, modern typography
 
 ## Typography System
 
 ### Font Selection
-- **Primary Font**: Inter (Google Fonts)
+- **Primary Font**: Inter Variable
 - **Rationale**: Clean, highly readable sans-serif font widely used in professional applications
-- **Implementation**: Configured via Next.js font optimization with CSS custom properties
+- **Implementation**: Bundled by Next.js from `@fontsource-variable/inter` and applied through CSS custom properties
 
 ### Font Loading Strategy
-\`\`\`typescript
-// Critical fix for image capture font consistency
-const loadFonts = async () => {
-  await document.fonts.ready;
-  // Additional 500ms buffer for complete font loading
-  await new Promise(resolve => setTimeout(resolve, 500));
-};
-\`\`\`
+
+Image export waits for `document.fonts.ready` so captures use the same font as the preview.
 
 ## Color System
 
@@ -79,22 +73,8 @@ ChatGPTMemeGenerator
 ## Critical Technical Solutions
 
 ### 1. Image Capture Font Embedding
-**Problem**: Captured images used fallback fonts instead of Inter
-**Solution**: Font injection in dom-to-image onclone callback
-\`\`\`typescript
-onclone: (clonedDoc) => {
-  // Inject Google Font stylesheet
-  const fontLink = clonedDoc.createElement('link');
-  fontLink.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap';
-  fontLink.rel = 'stylesheet';
-  clonedDoc.head.appendChild(fontLink);
-  
-  // Apply font family to all elements
-  const style = clonedDoc.createElement('style');
-  style.textContent = '* { font-family: "Inter", sans-serif !important; }';
-  clonedDoc.head.appendChild(style);
-}
-\`\`\`
+
+The editor serves Inter from its own origin. `dom-to-image` embeds the local font in the exported image.
 
 ### 2. Modern CSS Color Function Support
 **Problem**: html2canvas couldn't parse oklch() color functions from Tailwind CSS v4
@@ -156,7 +136,7 @@ const templates = [
 ## Performance Considerations
 
 ### Font Loading
-- **Preload strategy**: Next.js font optimization with `display: 'swap'`
+- **Delivery**: Fontsource styles and variable-font files are served by the editor
 - **Fallback fonts**: System font stack as backup
 - **Loading detection**: Await `document.fonts.ready` before image capture
 

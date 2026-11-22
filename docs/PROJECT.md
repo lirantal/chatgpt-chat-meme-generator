@@ -29,7 +29,7 @@ A web-based meme generator that recreates the ChatGPT interface, allowing users 
   - Easy customization and theming
 
 ### Typography
-- **Inter Font** (Google Fonts)
+- **Inter Variable** (Fontsource)
   - Modern, highly readable sans-serif font
   - Excellent for UI interfaces
   - Proper font loading and embedding for image capture
@@ -99,10 +99,10 @@ A web-based meme generator that recreates the ChatGPT interface, allowing users 
 - **Solution**: dom-to-image handles modern CSS better
 - **Benefits**: Proper font embedding, better color support, reliable output
 
-### Font Strategy: Google Fonts with Embedding
+### Font Strategy: Bundled Inter Variable
 - **Choice**: Inter font for modern, readable interface
-- **Implementation**: Next.js font optimization with proper loading
-- **Image Capture**: Custom font embedding solution for consistent output
+- **Implementation**: Import the Fontsource package from the root layout
+- **Image Capture**: `dom-to-image` embeds the local font in each image
 
 ## Key Technical Challenges & Solutions
 
@@ -112,9 +112,7 @@ A web-based meme generator that recreates the ChatGPT interface, allowing users 
 **Impact**: Reliable image generation without color parsing errors
 
 ### 2. Font Consistency in Captured Images
-**Problem**: Google Fonts not appearing in generated images
-**Solution**: Custom onclone callback to inject font stylesheets
-**Implementation**: Direct font family application to all elements during capture
+Both exports wait for `document.fonts.ready` and use the same font stylesheet as the live preview.
 
 ### 3. Responsive Design with Fixed Aspect Ratios
 **Problem**: ChatGPT interface needs to look authentic across devices
@@ -129,7 +127,7 @@ A web-based meme generator that recreates the ChatGPT interface, allowing users 
 ## Development Insights
 
 ### Performance Considerations
-- **Font Loading**: Optimized with Next.js font system and display: 'swap'
+- **Font Loading**: Bundled with the editor as same-origin static assets
 - **Image Generation**: Efficient DOM cloning and canvas rendering
 - **Bundle Size**: Tree-shaking with modular imports
 

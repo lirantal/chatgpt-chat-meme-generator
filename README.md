@@ -16,6 +16,12 @@ Your project is live at:
 
 **[https://vercel.com/liran-tals-projects/v0-chat-gpt-meme-generator](https://vercel.com/liran-tals-projects/v0-chat-gpt-meme-generator)**
 
+## Static hosting
+
+The editor runs in the browser. To build for a static origin such as Cloudflare Pages, install with `pnpm install --frozen-lockfile` and run `pnpm run build:static`. Publish the `out/` directory at the root of an HTTPS origin. Cloudflare Pages reads `public/_headers` from the exported artifact to let the main website remain the search landing page.
+
+Before switching the iframe on lirantal.com, open the deployed editor directly and inside the landing page. Check that editing updates the preview and that a PNG download works at desktop and mobile viewport sizes. Confirm that cross-origin clipboard access works in browsers that support it, with PNG download available as a fallback.
+
 ## Build your app
 
 Continue building your app on:
