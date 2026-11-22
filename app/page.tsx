@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card } from "@/components/ui/card"
 import { Menu, Edit, Copy, ThumbsUp, ThumbsDown, Volume2, Share, RotateCcw, Download } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-import * as domtoimage from "dom-to-image"
+import domtoimage from "dom-to-image"
 
 const models = [
   "ChatGPT 3.5",
@@ -77,42 +77,11 @@ export default function ChatGPTMemeGenerator() {
     try {
       await document.fonts.ready
 
-      // Create a style element with embedded Inter font
-      const fontStyle = document.createElement("style")
-      fontStyle.textContent = `
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        * { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important; }
-      `
-
       const dataUrl = await domtoimage.toPng(chatRef.current, {
         quality: 1.0,
         bgcolor: "#1f1f1f",
         width: chatRef.current.offsetWidth,
         height: chatRef.current.offsetHeight,
-        pixelRatio: 2,
-        style: {
-          fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-        },
-        filter: (node) => {
-          // Ensure all text nodes use Inter font
-          if (node.nodeType === Node.ELEMENT_NODE) {
-            const element = node as HTMLElement
-            element.style.fontFamily = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
-          }
-          return true
-        },
-        onclone: (clonedDoc) => {
-          // Add font stylesheet to cloned document
-          clonedDoc.head.appendChild(fontStyle.cloneNode(true))
-
-          // Apply font to all elements in cloned document
-          const allElements = clonedDoc.querySelectorAll("*")
-          allElements.forEach((el) => {
-            if (el instanceof HTMLElement) {
-              el.style.fontFamily = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
-            }
-          })
-        },
       })
 
       const link = document.createElement("a")
@@ -142,42 +111,11 @@ export default function ChatGPTMemeGenerator() {
     try {
       await document.fonts.ready
 
-      // Create a style element with embedded Inter font
-      const fontStyle = document.createElement("style")
-      fontStyle.textContent = `
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        * { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important; }
-      `
-
       const blob = await domtoimage.toBlob(chatRef.current, {
         quality: 1.0,
         bgcolor: "#1f1f1f",
         width: chatRef.current.offsetWidth,
         height: chatRef.current.offsetHeight,
-        pixelRatio: 2,
-        style: {
-          fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-        },
-        filter: (node) => {
-          // Ensure all text nodes use Inter font
-          if (node.nodeType === Node.ELEMENT_NODE) {
-            const element = node as HTMLElement
-            element.style.fontFamily = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
-          }
-          return true
-        },
-        onclone: (clonedDoc) => {
-          // Add font stylesheet to cloned document
-          clonedDoc.head.appendChild(fontStyle.cloneNode(true))
-
-          // Apply font to all elements in cloned document
-          const allElements = clonedDoc.querySelectorAll("*")
-          allElements.forEach((el) => {
-            if (el instanceof HTMLElement) {
-              el.style.fontFamily = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
-            }
-          })
-        },
       })
 
       if (!navigator.clipboard || !navigator.clipboard.write) {
